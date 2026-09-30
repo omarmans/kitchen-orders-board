@@ -57,8 +57,9 @@
         <div class="flex flex-col gap-3">
           @for (o of byStatus()[col.status]; track o.id; let i = $index) {
             <article
-              class="animate__animated animate__fadeInUp rounded-xl bg-white p-3.5 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md"
+              class="cursor-pointer animate__animated animate__fadeInUp rounded-xl bg-white p-3.5 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md"
               [style.animation-delay.ms]="i * 60"
+              (click)="showDetails(o)"
             >
               <div class="flex items-center justify-between">
                 <span class="font-bold text-slate-800">#{{ o.number }}</span>

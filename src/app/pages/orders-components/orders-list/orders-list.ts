@@ -48,19 +48,9 @@ export class OrdersList implements OnInit {
     },
   ];
 
-  // moveToNextStep(order: Order, OrderStatus: OrderStatus) {
-  //   if (order.status === 'new') {
-  //     this.orderLabelBtn.set('Start Preparing');
-  //     this.orderServices.updateOrderStatus(order.id, OrderStatus[preparing]);
-  //   } else if (order.status === 'preparing') {
-  //     this.orderLabelBtn.set('Ready');
-  //     this.orderServices.updateOrderStatus(order.id, OrderStatus.ready);
-  //   } else if (order.status === 'ready') {
-  //     this.orderLabelBtn.set('served');
-  //     this.orderServices.updateOrderStatus(order.id, OrderStatus.served);
-  //   }
-  // }
-
+  showDetails(order: Order) {
+    this.router.navigate(['/order-details', order.id]);
+  }
   getOrderButtonLabel(status: OrderStatus): string {
     switch (status) {
       case 'new':

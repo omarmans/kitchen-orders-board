@@ -1,0 +1,179 @@
+<section class="min-h-screen bg-slate-50 p-4 sm:p-6">
+  @if (loading()) {
+    <div
+      class="mx-auto flex min-h-[60vh] max-w-xl items-center justify-center rounded-2xl bg-white p-6 text-center shadow-sm ring-1 ring-slate-200"
+    >
+      <p class="text-sm text-slate-500">Loading order details...</p>
+    </div>
+  } @else if (notFound()) {
+    <div class="mx-auto max-w-2xl">
+      <div class="mb-4">
+        <button
+          type="button"
+          (click)="goBack()"
+          class="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-100"
+        >
+          <span>←</span>
+          <span>Back</span>
+        </button>
+      </div>
+
+      <div
+        class="flex min-h-[60vh] flex-col items-center justify-center rounded-3xl bg-white p-8 text-center shadow-sm ring-1 ring-slate-200"
+      >
+        <div
+          class="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-rose-100 text-3xl font-bold text-rose-600"
+        >
+          404
+        </div>
+
+        <h1 class="text-2xl font-bold text-slate-800">Order Not Found</h1>
+        <p class="mt-2 max-w-md text-sm text-slate-500">
+          The order you are looking for does not exist, may have been deleted, or the provided ID is
+          invalid.
+        </p>
+
+        <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
+          <button
+            type="button"
+            (click)="goBack()"
+            class="rounded-xl bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-700"
+          >
+            Back to Orders
+          </button>
+        </div>
+      </div>
+    </div>
+  } @else if (order(); as o) {
+    <div class="mx-auto max-w-4xl">
+      <!-- Back Button -->
+      <div class="mb-4">
+        <button
+          type="button"
+          (click)="goBack()"
+          class="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-100"
+        >
+          <span>←</span>
+          <span>Back</span>
+        </button>
+      </div>
+
+      <!-- Header -->
+      <div class="mb-6 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p class="text-sm font-medium text-sky-600">Order Details</p>
+            <h1 class="mt-1 text-2xl font-bold text-slate-800">#{{ o.number }}</h1>
+            <p class="mt-1 text-sm text-slate-500">Created at {{ o.createdAt | date: 'medium' }}</p>
+          </div>
+
+          <span
+            [class]="
+              'w-fit rounded-full px-3 py-1 text-sm font-semibold capitalize ' +
+              getStatusClass(o.status)
+            "
+          >
+            {{ o.status }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Info Grid -->
+      <div class="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Type</p>
+          <p class="mt-2 text-base font-semibold text-slate-800 capitalize">{{ o.type }}</p>
+        </div>
+
+        <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Table</p>
+          <p class="mt-2 text-base font-semibold text-slate-800">
+            {{ o.table || '--' }}
+          </p>
+        </div>
+
+        <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Phone</p>
+          <p class="mt-2 text-base font-semibold text-slate-800">
+            {{ o.phone || 'No phone' }}
+          </p>
+        </div>
+
+        <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Items Count</p>
+          <p class="mt-2 text-base font-semibold text-slate-800">
+            {{ o.items.length }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Items -->
+      <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+        <div class="mb-4 flex items-center justify-between">
+          <div>
+            <h2 class="text-lg font-bold text-slate-800">Ordered Items</h2>
+            <p class="text-sm text-slate-500">Review all items inside this order</p>
+          </div>
+
+          <div class="text-sm font-bold text-slate-700">
+            Total: {{ getOrderTotal(o) | number: '1.2-2' }}
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          @for (item of o.items; track item.menuId; let i = $index) {
+            <div
+              class="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between"
+            >
+              <div class="flex items-start gap-3">
+                <div
+                  class="flex size-10 items-center justify-center rounded-xl bg-sky-100 text-sm font-bold text-sky-700"
+                >
+                  {{ i + 1 }}
+                </div>
+
+                <div>
+                  <p class="font-semibold text-slate-800">
+                    {{ getMenuItemById(item.menuId)?.name || 'Unknown Item' }}
+                  </p>
+
+                  <p class="mt-1 text-sm text-slate-500">
+                    Category: {{ getMenuItemById(item.menuId)?.category || '--' }}
+                  </p>
+
+                  <p class="mt-1 text-sm text-slate-500">
+                    Price: {{ getMenuItemById(item.menuId)?.price ?? 0 }}
+                  </p>
+
+                  <p class="mt-1 text-sm text-slate-500">
+                    Note: {{ item.note ? item.note : 'No notes' }}
+                  </p>
+
+                  <p class="mt-1 text-xs text-slate-400">Menu ID: {{ item.menuId }}</p>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3">
+                <span
+                  class="rounded-lg bg-white px-3 py-1 text-sm font-medium text-slate-500 ring-1 ring-slate-200"
+                >
+                  Qty: {{ item.qty }}
+                </span>
+
+                <span class="rounded-lg bg-sky-600 px-3 py-1 text-sm font-bold text-white">
+                  {{ (getMenuItemById(item.menuId)?.price ?? 0) * item.qty }}
+                </span>
+              </div>
+            </div>
+          } @empty {
+            <div
+              class="rounded-xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-400"
+            >
+              No items found
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</section>

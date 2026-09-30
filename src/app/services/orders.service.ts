@@ -12,6 +12,9 @@ export class OrdersService {
   getOrders() {
     return this.http.get<Order[]>(`${this.baseUrl()}/orders`);
   }
+  getOrderById(id: string) {
+    return this.http.get<Order>(`${this.baseUrl()}/orders/${id}`);
+  }
   getMenuItmes() {
     return this.http.get<MenuItem[]>(`${this.baseUrl()}/menu`);
   }
