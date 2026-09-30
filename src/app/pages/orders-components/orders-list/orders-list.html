@@ -1,0 +1,67 @@
+<section class="min-h-screen bg-slate-50">
+  <header class="px-4 py-5 sm:px-6">
+    <h1 class="text-2xl font-bold text-slate-800">Kitchen Orders</h1>
+    <p class="text-sm text-slate-500">Track every order from kitchen to table</p>
+  </header>
+
+  <div
+    class="flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-6 sm:px-6 lg:grid lg:grid-cols-4 lg:overflow-visible"
+  >
+    @for (col of columns; track col.status) {
+      <section
+        class="animate__animated animate__fadeIn w-[85%] shrink-0 snap-center rounded-2xl bg-slate-100/80 p-3 sm:w-80 lg:w-auto"
+        [attr.aria-label]="col.label"
+      >
+        <div class="mb-3 flex items-center justify-between px-1">
+          <div class="flex items-center gap-2">
+            <span class="size-2.5 rounded-full" [class]="col.dot"></span>
+            <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-700">
+              {{ col.label }}
+            </h2>
+          </div>
+          <span class="rounded-full px-2.5 py-0.5 text-xs font-semibold" [class]="col.badge">
+            {{ byStatus()[col.status].length }}
+          </span>
+        </div>
+
+        <div class="flex flex-col gap-3">
+          @for (o of byStatus()[col.status]; track o.id; let i = $index) {
+            <article
+              class="animate__animated animate__fadeInUp rounded-xl bg-white p-3.5 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md"
+              [style.animation-delay.ms]="i * 60"
+            >
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-slate-800">#{{ o.number }}</span>
+                <span
+                  class="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600"
+                >
+                  @if (o.type === 'dine-in') {
+                    T-{{ o.table }}
+                  } @else {
+                    <span class="capitalize">{{ o.type }}</span>
+                  }
+                </span>
+              </div>
+              <p class="mt-2 text-sm text-slate-500">
+                {{ o.items.length }} {{ o.items.length === 1 ? 'item' : 'items' }} · EGP
+                {{ getOrderTotal(o) }}
+              </p>
+              <p class="mt-1 text-xs text-slate-400 flex items-center justify-between">
+                <span>{{ o.createdAt | date: 'shortTime' }}</span>
+                @if (isLate(o)) {
+                  <span class="text-red-600 font-semibold">Late</span>
+                }
+              </p>
+            </article>
+          } @empty {
+            <p
+              class="rounded-xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-400"
+            >
+              No orders
+            </p>
+          }
+        </div>
+      </section>
+    }
+  </div>
+</section>
