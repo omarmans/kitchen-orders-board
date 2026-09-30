@@ -4,6 +4,36 @@
     <p class="text-sm text-slate-500">Track every order from kitchen to table</p>
   </header>
 
+  <div class="px-4 pb-4 sm:px-6">
+    <div
+      class="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:flex-row"
+    >
+      <div class="flex-1">
+        <input
+          type="text"
+          [ngModel]="searchTerm()"
+          (ngModelChange)="onSearchChange($event)"
+          placeholder="Search by order number or table number"
+          class="w-full rounded-xl border border-slate-300 px-4 py-2.5 outline-none focus:border-sky-500"
+        />
+      </div>
+
+      <div class="sm:w-56">
+        <select
+          [ngModel]="selectedType()"
+          (ngModelChange)="onTypeChange($event)"
+          class="w-full rounded-xl border border-slate-300 px-4 py-2.5 outline-none focus:border-sky-500"
+        >
+          @for (type of typeOptions(); track type) {
+            <option [value]="type">
+              {{ type === 'all' ? 'All types' : type }}
+            </option>
+          }
+        </select>
+      </div>
+    </div>
+  </div>
+
   <div
     class="flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-6 sm:px-6 lg:grid lg:grid-cols-4 lg:overflow-visible"
   >
@@ -42,14 +72,16 @@
                   }
                 </span>
               </div>
+
               <p class="mt-2 text-sm text-slate-500">
                 {{ o.items.length }} {{ o.items.length === 1 ? 'item' : 'items' }} · EGP
                 {{ getOrderTotal(o) }}
               </p>
-              <p class="mt-1 text-xs text-slate-400 flex items-center justify-between">
+
+              <p class="mt-1 flex items-center justify-between text-xs text-slate-400">
                 <span>{{ o.createdAt | date: 'shortTime' }}</span>
                 @if (isLate(o)) {
-                  <span class="text-red-600 font-semibold">Late</span>
+                  <span class="font-semibold text-red-600">Late</span>
                 }
               </p>
             </article>

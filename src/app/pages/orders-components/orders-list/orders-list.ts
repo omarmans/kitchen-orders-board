@@ -1,12 +1,14 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { Order, OrderStatus } from '../../../models/order.model';
+import { Order, OrderStatus, OrderType } from '../../../models/order.model';
 import { OrdersService } from '../../../services/orders.service';
 import { MenuItem } from '../../../models/menu-item.model';
 import { Column } from '../../../models/column.model';
+import { FormsModule } from '@angular/forms';
+import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
-  imports: [DatePipe],
+  imports: [DatePipe, FormsModule],
   selector: 'app-orders-list',
   styleUrl: './orders-list.scss',
   templateUrl: './orders-list.html',
@@ -14,8 +16,14 @@ import { Column } from '../../../models/column.model';
 export class OrdersList implements OnInit {
   ordersList = signal<Order[]>([]);
   menuItems = signal<MenuItem[]>([]);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private orderServices = inject(OrdersService);
   now = signal(Date.now());
+  private debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  searchTerm = signal('');
+  debouncedSearchTerm = signal('');
+  selectedType = signal<'all' | OrderType>('all');
   readonly columns: Column[] = [
     { status: 'new', label: 'New', dot: 'bg-sky-500', badge: 'bg-sky-100 text-sky-700' },
     {
@@ -37,7 +45,25 @@ export class OrdersList implements OnInit {
       badge: 'bg-slate-200 text-slate-600',
     },
   ];
+  typeOptions = computed(() => {
+    const types = this.ordersList().map((order) => order.type);
+    return ['all', ...new Set(types)] as Array<'all' | OrderType>;
+  });
+  filteredOrders = computed(() => {
+    const search = this.debouncedSearchTerm().trim().toLowerCase();
+    const selectedType = this.selectedType();
 
+    return this.ordersList().filter((order) => {
+      const matchesType = selectedType === 'all' ? true : order.type === selectedType;
+
+      const orderNumber = String(order.number).toLowerCase();
+      const tableNumber = order.table !== null ? String(order.table).toLowerCase() : '';
+
+      const matchesSearch = !search || orderNumber.includes(search) || tableNumber.includes(search);
+
+      return matchesType && matchesSearch;
+    });
+  });
   isLate(order: Order): boolean {
     if (order.status === 'ready' || order.status === 'served') {
       return false;
@@ -50,7 +76,7 @@ export class OrdersList implements OnInit {
   ngOnInit(): void {
     this.getOrdersList();
     this.getMenuList();
-
+    this.readQueryParams();
     setInterval(() => {
       this.now.set(Date.now());
     }, 1000);
@@ -64,7 +90,7 @@ export class OrdersList implements OnInit {
       served: [],
     };
 
-    for (const o of this.ordersList()) {
+    for (const o of this.filteredOrders()) {
       groups[o.status].push(o);
     }
 
@@ -95,13 +121,57 @@ export class OrdersList implements OnInit {
     });
   }
 
-  // getOrderTotal(order: Order): number {
-  //   return order.items.reduce((total, item) => {
-  //     const menuItem = this.menuItems().find((menu) => menu.id === item.menuId);
-  //     const price = menuItem?.price ?? 0;
-  //     return total + price * item.qty;
-  //   }, 0);
-  // }
+  readQueryParams() {
+    this.route.queryParams.subscribe((params) => {
+      const search = params['search'] ?? '';
+      const type = params['type'] ?? 'all';
+
+      this.searchTerm.set(search);
+      this.debouncedSearchTerm.set(search);
+
+      if (type === 'dine-in' || type === 'takeaway' || type === 'delivery' || type === 'all') {
+        this.selectedType.set(type);
+      } else {
+        this.selectedType.set('all');
+      }
+    });
+  }
+
+  onSearchChange(value: string) {
+    this.searchTerm.set(value);
+
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer);
+    }
+
+    this.debounceTimer = setTimeout(() => {
+      this.debouncedSearchTerm.set(value);
+      this.updateQueryParams();
+    }, 400);
+  }
+
+  onTypeChange(value: 'all' | OrderType) {
+    this.selectedType.set(value);
+    this.updateQueryParams();
+  }
+
+  updateQueryParams() {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        search: this.debouncedSearchTerm() || null,
+        type: this.selectedType() !== 'all' ? this.selectedType() : null,
+      },
+      queryParamsHandling: 'merge',
+    });
+  }
+  getOrderTotal(order: Order): number {
+    return order.items.reduce((total, item) => {
+      const menuItem = this.menuItems().find((menu) => menu.id === item.menuId);
+      const price = menuItem?.price ?? 0;
+      return total + price * item.qty;
+    }, 0);
+  }
 
   // getOrderTotal(order: Order): number {
   //   let total = 0;
@@ -115,15 +185,15 @@ export class OrdersList implements OnInit {
   //   return total;
   // }
 
-  getOrderTotal(order: Order): number {
-    let total = 0;
+  // getOrderTotal(order: Order): number {
+  //   let total = 0;
 
-    for (const item of order.items) {
-      const menuItem = this.menuItems().find((menu) => menu.id === item.menuId);
-      const price = menuItem?.price ?? 0;
-      total += price * item.qty;
-    }
+  //   for (const item of order.items) {
+  //     const menuItem = this.menuItems().find((menu) => menu.id === item.menuId);
+  //     const price = menuItem?.price ?? 0;
+  //     total += price * item.qty;
+  //   }
 
-    return total;
-  }
+  //   return total;
+  // }
 }
