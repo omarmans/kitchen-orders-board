@@ -6,6 +6,7 @@ import { MenuItem } from '../../../models/menu-item.model';
 import { Column } from '../../../models/column.model';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   imports: [DatePipe, FormsModule],
@@ -19,6 +20,7 @@ export class OrdersList implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private orderServices = inject(OrdersService);
+  private toastr = inject(ToastrService);
   now = signal(Date.now());
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
   searchTerm = signal('');
@@ -45,6 +47,69 @@ export class OrdersList implements OnInit {
       badge: 'bg-slate-200 text-slate-600',
     },
   ];
+
+  // moveToNextStep(order: Order, OrderStatus: OrderStatus) {
+  //   if (order.status === 'new') {
+  //     this.orderLabelBtn.set('Start Preparing');
+  //     this.orderServices.updateOrderStatus(order.id, OrderStatus[preparing]);
+  //   } else if (order.status === 'preparing') {
+  //     this.orderLabelBtn.set('Ready');
+  //     this.orderServices.updateOrderStatus(order.id, OrderStatus.ready);
+  //   } else if (order.status === 'ready') {
+  //     this.orderLabelBtn.set('served');
+  //     this.orderServices.updateOrderStatus(order.id, OrderStatus.served);
+  //   }
+  // }
+
+  getOrderButtonLabel(status: OrderStatus): string {
+    switch (status) {
+      case 'new':
+        return 'Start Preparing';
+      case 'preparing':
+        return 'Mark Ready';
+      case 'ready':
+        return 'Mark Served';
+      case 'served':
+        return 'Served';
+      default:
+        return 'Update';
+    }
+  }
+  getNextStatus(status: OrderStatus): OrderStatus | null {
+    switch (status) {
+      case 'new':
+        return 'preparing';
+      case 'preparing':
+        return 'ready';
+      case 'ready':
+        return 'served';
+      default:
+        return null;
+    }
+  }
+  moveToNextStep(order: Order) {
+    const previousStatus = order.status;
+    const nextStatus = this.getNextStatus(order.status);
+
+    if (!nextStatus) return;
+
+    this.ordersList.update((orders) =>
+      orders.map((o) => (o.id === order.id ? { ...o, status: nextStatus } : o)),
+    );
+
+    this.orderServices.updateOrderStatus(order.id, nextStatus).subscribe({
+      next: () => {
+        this.toastr.success(`Order #${order.number} moved to ${nextStatus}`);
+      },
+      error: () => {
+        this.ordersList.update((orders) =>
+          orders.map((o) => (o.id === order.id ? { ...o, status: previousStatus } : o)),
+        );
+
+        this.toastr.error(`Failed to update order #${order.number}. Please try again.`);
+      },
+    });
+  }
   typeOptions = computed(() => {
     const types = this.ordersList().map((order) => order.type);
     return ['all', ...new Set(types)] as Array<'all' | OrderType>;

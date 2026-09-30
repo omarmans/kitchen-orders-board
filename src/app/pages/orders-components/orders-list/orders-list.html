@@ -84,6 +84,13 @@
                   <span class="font-semibold text-red-600">Late</span>
                 }
               </p>
+              <button
+                class="mt-3 w-full rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition duration-200 disabled:cursor-not-allowed disabled:bg-slate-300"
+                [disabled]="o.status === 'served'"
+                (click)="moveToNextStep(o)"
+              >
+                {{ getOrderButtonLabel(o.status) }}
+              </button>
             </article>
           } @empty {
             <p
