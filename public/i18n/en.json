@@ -1,0 +1,33 @@
+{
+  "COMMON": {
+    "ARABIC": "العربية",
+    "ENGLISH": "English",
+    "SEARCH": "Search",
+    "ALL_TYPES": "All types",
+    "ITEM": "item",
+    "ITEMS": "items",
+    "NO_ORDERS": "No orders",
+    "LATE": "Late",
+    "EGP": "EGP"
+  },
+  "ORDERS": {
+    "TITLE": "Kitchen Orders",
+    "NEW_ORDER": "New Order",
+    "SEARCH_PLACEHOLDER": "Search by order number or table number",
+    "TYPE_DINE_IN": "Dine In",
+    "TYPE_TAKEAWAY": "Takeaway",
+    "TYPE_DELIVERY": "Delivery",
+    "STATUS_NEW": "New",
+    "STATUS_PREPARING": "Preparing",
+    "STATUS_READY": "Ready",
+    "STATUS_SERVED": "Served",
+    "BTN_START_PREPARING": "Start Preparing",
+    "BTN_MARK_READY": "Mark Ready",
+    "BTN_MARK_SERVED": "Mark Served",
+    "BTN_SERVED": "Served",
+    "BTN_UPDATE": "Update",
+    "TABLE": "T-{{table}}",
+    "ORDER_MOVED": "Order #{{number}} moved to {{status}}",
+    "ORDER_UPDATE_FAILED": "Failed to update order #{{number}}. Please try again."
+  }
+}

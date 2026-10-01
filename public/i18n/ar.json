@@ -1,0 +1,33 @@
+{
+  "COMMON": {
+    "ARABIC": "العربية",
+    "ENGLISH": "English",
+    "SEARCH": "بحث",
+    "ALL_TYPES": "كل الأنواع",
+    "ITEM": "عنصر",
+    "ITEMS": "عناصر",
+    "NO_ORDERS": "لا توجد طلبات",
+    "LATE": "متأخر",
+    "EGP": "ج.م"
+  },
+  "ORDERS": {
+    "TITLE": "طلبات المطبخ",
+    "NEW_ORDER": "طلب جديد",
+    "SEARCH_PLACEHOLDER": "ابحث برقم الطلب أو رقم الطاولة",
+    "TYPE_DINE_IN": "داخل المطعم",
+    "TYPE_TAKEAWAY": "استلام",
+    "TYPE_DELIVERY": "توصيل",
+    "STATUS_NEW": "جديد",
+    "STATUS_PREPARING": "قيد التحضير",
+    "STATUS_READY": "جاهز",
+    "STATUS_SERVED": "تم التقديم",
+    "BTN_START_PREPARING": "ابدأ التحضير",
+    "BTN_MARK_READY": "تحديد كجاهز",
+    "BTN_MARK_SERVED": "تحديد كتم التقديم",
+    "BTN_SERVED": "تم التقديم",
+    "BTN_UPDATE": "تحديث",
+    "TABLE": "ط-{{table}}",
+    "ORDER_MOVED": "تم نقل الطلب رقم {{number}} إلى {{status}}",
+    "ORDER_UPDATE_FAILED": "فشل تحديث الطلب رقم {{number}}. حاول مرة أخرى."
+  }
+}

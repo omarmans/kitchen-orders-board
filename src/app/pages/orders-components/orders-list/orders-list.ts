@@ -16,15 +16,43 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { exhaustMap, Subject, takeUntil, timer } from 'rxjs';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 @Component({
-  imports: [DatePipe, FormsModule],
+  imports: [DatePipe, FormsModule, TranslatePipe],
   selector: 'app-orders-list',
   styleUrl: './orders-list.scss',
   templateUrl: './orders-list.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OrdersList implements OnInit, OnDestroy {
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private orderServices = inject(OrdersService);
+  private toastr = inject(ToastrService);
+  private translate = inject(TranslateService);
+
+  ordersList = signal<Order[]>([]);
+  menuItems = signal<MenuItem[]>([]);
+  now = signal(Date.now());
+  private debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  searchTerm = signal('');
+  debouncedSearchTerm = signal('');
+  selectedType = signal<'all' | OrderType>('all');
+  private destroy$ = new Subject<void>();
+  private nowIntervalId: ReturnType<typeof setInterval> | null = null;
+
+  ngOnInit(): void {
+    this.startOrdersPolling();
+    this.getOrdersList();
+    this.getMenuList();
+    this.readQueryParams();
+
+    this.nowIntervalId = setInterval(() => {
+      this.now.set(Date.now());
+    }, 1000);
+  }
+
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
@@ -37,30 +65,7 @@ export class OrdersList implements OnInit, OnDestroy {
       clearInterval(this.nowIntervalId);
     }
   }
-  ngOnInit(): void {
-    this.startOrdersPolling();
-    this.getOrdersList();
-    this.getMenuList();
-    this.readQueryParams();
-    setInterval(() => {
-      this.now.set(Date.now());
-    }, 1000);
-  }
-  ordersList = signal<Order[]>([]);
-  menuItems = signal<MenuItem[]>([]);
-  private router = inject(Router);
-  private route = inject(ActivatedRoute);
-  private orderServices = inject(OrdersService);
-  private toastr = inject(ToastrService);
-  now = signal(Date.now());
-  private debounceTimer: ReturnType<typeof setTimeout> | null = null;
-  searchTerm = signal('');
-  debouncedSearchTerm = signal('');
-  selectedType = signal<'all' | OrderType>('all');
-  private destroy$ = new Subject<void>();
-  private nowIntervalId: ReturnType<typeof setInterval> | null = null;
 
-  //refresh_logic
   private startOrdersPolling() {
     timer(0, 15000)
       .pipe(
@@ -76,23 +81,29 @@ export class OrdersList implements OnInit, OnDestroy {
         },
       });
   }
+
   readonly columns: Column[] = [
-    { status: 'new', label: 'New', dot: 'bg-sky-500', badge: 'bg-sky-100 text-sky-700' },
+    {
+      status: 'new',
+      label: 'ORDERS.STATUS_NEW',
+      dot: 'bg-sky-500',
+      badge: 'bg-sky-100 text-sky-700',
+    },
     {
       status: 'preparing',
-      label: 'Preparing',
+      label: 'ORDERS.STATUS_PREPARING',
       dot: 'bg-amber-500',
       badge: 'bg-amber-100 text-amber-700',
     },
     {
       status: 'ready',
-      label: 'Ready',
+      label: 'ORDERS.STATUS_READY',
       dot: 'bg-emerald-500',
       badge: 'bg-emerald-100 text-emerald-700',
     },
     {
       status: 'served',
-      label: 'Served',
+      label: 'ORDERS.STATUS_SERVED',
       dot: 'bg-slate-400',
       badge: 'bg-slate-200 text-slate-600',
     },
@@ -101,23 +112,54 @@ export class OrdersList implements OnInit, OnDestroy {
   showDetails(order: Order) {
     this.router.navigate(['/order-details', order.id]);
   }
+
   newOrder() {
     this.router.navigate(['/new-order']);
   }
+
   getOrderButtonLabel(status: OrderStatus): string {
     switch (status) {
       case 'new':
-        return 'Start Preparing';
+        return this.translate.instant('ORDERS.BTN_START_PREPARING');
       case 'preparing':
-        return 'Mark Ready';
+        return this.translate.instant('ORDERS.BTN_MARK_READY');
       case 'ready':
-        return 'Mark Served';
+        return this.translate.instant('ORDERS.BTN_MARK_SERVED');
       case 'served':
-        return 'Served';
+        return this.translate.instant('ORDERS.BTN_SERVED');
       default:
-        return 'Update';
+        return this.translate.instant('ORDERS.BTN_UPDATE');
     }
   }
+
+  getStatusLabel(status: OrderStatus): string {
+    switch (status) {
+      case 'new':
+        return this.translate.instant('ORDERS.STATUS_NEW');
+      case 'preparing':
+        return this.translate.instant('ORDERS.STATUS_PREPARING');
+      case 'ready':
+        return this.translate.instant('ORDERS.STATUS_READY');
+      case 'served':
+        return this.translate.instant('ORDERS.STATUS_SERVED');
+      default:
+        return status;
+    }
+  }
+
+  getTypeLabel(type: OrderType): string {
+    switch (type) {
+      case 'dine-in':
+        return this.translate.instant('ORDERS.TYPE_DINE_IN');
+      case 'takeaway':
+        return this.translate.instant('ORDERS.TYPE_TAKEAWAY');
+      case 'delivery':
+        return this.translate.instant('ORDERS.TYPE_DELIVERY');
+      default:
+        return type;
+    }
+  }
+
   getNextStatus(status: OrderStatus): OrderStatus | null {
     switch (status) {
       case 'new':
@@ -130,6 +172,7 @@ export class OrdersList implements OnInit, OnDestroy {
         return null;
     }
   }
+
   moveToNextStep(order: Order) {
     const previousStatus = order.status;
     const nextStatus = this.getNextStatus(order.status);
@@ -142,21 +185,32 @@ export class OrdersList implements OnInit, OnDestroy {
 
     this.orderServices.updateOrderStatus(order.id, nextStatus).subscribe({
       next: () => {
-        this.toastr.success(`Order #${order.number} moved to ${nextStatus}`);
+        this.toastr.success(
+          this.translate.instant('ORDERS.ORDER_MOVED', {
+            number: order.number,
+            status: this.getStatusLabel(nextStatus),
+          }),
+        );
       },
       error: () => {
         this.ordersList.update((orders) =>
           orders.map((o) => (o.id === order.id ? { ...o, status: previousStatus } : o)),
         );
 
-        this.toastr.error(`Failed to update order #${order.number}. Please try again.`);
+        this.toastr.error(
+          this.translate.instant('ORDERS.ORDER_UPDATE_FAILED', {
+            number: order.number,
+          }),
+        );
       },
     });
   }
+
   typeOptions = computed(() => {
     const types = this.ordersList().map((order) => order.type);
     return ['all', ...new Set(types)] as Array<'all' | OrderType>;
   });
+
   filteredOrders = computed(() => {
     const search = this.debouncedSearchTerm().trim().toLowerCase();
     const selectedType = this.selectedType();
@@ -172,10 +226,12 @@ export class OrdersList implements OnInit, OnDestroy {
       return matchesType && matchesSearch;
     });
   });
+
   isLate(order: Order): boolean {
     if (order.status === 'ready' || order.status === 'served') {
       return false;
     }
+
     const createdTime = new Date(order.createdAt).getTime();
     const diffInMinutes = (this.now() - createdTime) / (1000 * 60);
 
@@ -201,7 +257,6 @@ export class OrdersList implements OnInit, OnDestroy {
     this.orderServices.getOrders().subscribe({
       next: (res) => {
         this.ordersList.set(res);
-        console.log('orders:', res);
       },
       error: (err) => {
         console.error('orders error:', err);
@@ -213,7 +268,6 @@ export class OrdersList implements OnInit, OnDestroy {
     this.orderServices.getMenuItmes().subscribe({
       next: (res) => {
         this.menuItems.set(res);
-        console.log('menu:', res);
       },
       error: (err) => {
         console.error('menu error:', err);
@@ -265,6 +319,7 @@ export class OrdersList implements OnInit, OnDestroy {
       queryParamsHandling: 'merge',
     });
   }
+
   getOrderTotal(order: Order): number {
     return order.items.reduce((total, item) => {
       const menuItem = this.menuItems().find((menu) => menu.id === item.menuId);

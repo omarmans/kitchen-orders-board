@@ -1,12 +1,14 @@
 <section class="min-h-screen bg-slate-50">
-  <header class="px-4 py-5 sm:px-6 flex items-center justify-between">
-    <h1 class="text-2xl font-bold text-slate-800">Kitchen Orders</h1>
-    <!-- <p class="text-sm text-slate-500">Track every order from kitchen to table</p> -->
+  <header class="flex items-center justify-between px-4 py-5 sm:px-6">
+    <h1 class="text-2xl font-bold text-slate-800">
+      {{ 'ORDERS.TITLE' | translate }}
+    </h1>
+
     <button
       (click)="newOrder()"
       class="mt-3 rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition duration-200 disabled:cursor-not-allowed disabled:bg-slate-300"
     >
-      New Order
+      {{ 'ORDERS.NEW_ORDER' | translate }}
     </button>
   </header>
 
@@ -19,7 +21,7 @@
           type="text"
           [ngModel]="searchTerm()"
           (ngModelChange)="onSearchChange($event)"
-          placeholder="Search by order number or table number"
+          [placeholder]="'ORDERS.SEARCH_PLACEHOLDER' | translate"
           class="w-full rounded-xl border border-slate-300 px-4 py-2.5 outline-none focus:border-sky-500"
         />
       </div>
@@ -32,7 +34,7 @@
         >
           @for (type of typeOptions(); track type) {
             <option [value]="type">
-              {{ type === 'all' ? 'All types' : type }}
+              {{ type === 'all' ? ('COMMON.ALL_TYPES' | translate) : getTypeLabel(type) }}
             </option>
           }
         </select>
@@ -46,13 +48,13 @@
     @for (col of columns; track col.status) {
       <section
         class="animate__animated animate__fadeIn w-[85%] shrink-0 snap-center rounded-2xl bg-slate-100/80 p-3 sm:w-80 lg:w-auto"
-        [attr.aria-label]="col.label"
+        [attr.aria-label]="col.label | translate"
       >
         <div class="mb-3 flex items-center justify-between px-1">
           <div class="flex items-center gap-2">
             <span class="size-2.5 rounded-full" [class]="col.dot"></span>
             <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-700">
-              {{ col.label }}
+              {{ col.label | translate }}
             </h2>
           </div>
           <span class="rounded-full px-2.5 py-0.5 text-xs font-semibold" [class]="col.badge">
@@ -72,24 +74,30 @@
                   class="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600"
                 >
                   @if (o.type === 'dine-in') {
-                    T-{{ o.table }}
+                    {{ 'ORDERS.TABLE' | translate: { table: o.table } }}
                   } @else {
-                    <span class="capitalize">{{ o.type }}</span>
+                    <span class="capitalize">{{ getTypeLabel(o.type) }}</span>
                   }
                 </span>
               </div>
 
               <p class="mt-2 text-sm text-slate-500">
-                {{ o.items.length }} {{ o.items.length === 1 ? 'item' : 'items' }} · EGP
-                {{ getOrderTotal(o) }}
+                {{ o.items.length }}
+                {{
+                  o.items.length === 1 ? ('COMMON.ITEM' | translate) : ('COMMON.ITEMS' | translate)
+                }}
+                · {{ 'COMMON.EGP' | translate }} {{ getOrderTotal(o) }}
               </p>
 
               <p class="mt-1 flex items-center justify-between text-xs text-slate-400">
                 <span>{{ o.createdAt | date: 'shortTime' }}</span>
                 @if (isLate(o)) {
-                  <span class="font-semibold text-red-600">Late</span>
+                  <span class="font-semibold text-red-600">
+                    {{ 'COMMON.LATE' | translate }}
+                  </span>
                 }
               </p>
+
               <button
                 class="mt-3 w-full rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition duration-200 disabled:cursor-not-allowed disabled:bg-slate-300"
                 [disabled]="o.status === 'served'"
@@ -102,7 +110,7 @@
             <p
               class="rounded-xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-400"
             >
-              No orders
+              {{ 'COMMON.NO_ORDERS' | translate }}
             </p>
           }
         </div>
