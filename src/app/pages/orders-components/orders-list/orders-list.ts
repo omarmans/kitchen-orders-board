@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { Order, OrderStatus, OrderType } from '../../../models/order.model';
 import { OrdersService } from '../../../services/orders.service';
@@ -7,6 +7,7 @@ import { Column } from '../../../models/column.model';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
+import { exhaustMap, Subject, takeUntil, timer } from 'rxjs';
 
 @Component({
   imports: [DatePipe, FormsModule],
@@ -14,7 +15,28 @@ import { ToastrService } from 'ngx-toastr';
   styleUrl: './orders-list.scss',
   templateUrl: './orders-list.html',
 })
-export class OrdersList implements OnInit {
+export class OrdersList implements OnInit, OnDestroy {
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer);
+    }
+
+    if (this.nowIntervalId) {
+      clearInterval(this.nowIntervalId);
+    }
+  }
+  ngOnInit(): void {
+    this.startOrdersPolling();
+    this.getOrdersList();
+    this.getMenuList();
+    this.readQueryParams();
+    setInterval(() => {
+      this.now.set(Date.now());
+    }, 1000);
+  }
   ordersList = signal<Order[]>([]);
   menuItems = signal<MenuItem[]>([]);
   private router = inject(Router);
@@ -26,6 +48,25 @@ export class OrdersList implements OnInit {
   searchTerm = signal('');
   debouncedSearchTerm = signal('');
   selectedType = signal<'all' | OrderType>('all');
+  private destroy$ = new Subject<void>();
+  private nowIntervalId: ReturnType<typeof setInterval> | null = null;
+
+  //refresh_logic
+  private startOrdersPolling() {
+    timer(0, 15000)
+      .pipe(
+        takeUntil(this.destroy$),
+        exhaustMap(() => this.orderServices.getOrders()),
+      )
+      .subscribe({
+        next: (res) => {
+          this.ordersList.set(res);
+        },
+        error: (err) => {
+          console.error('orders error:', err);
+        },
+      });
+  }
   readonly columns: Column[] = [
     { status: 'new', label: 'New', dot: 'bg-sky-500', badge: 'bg-sky-100 text-sky-700' },
     {
@@ -50,6 +91,9 @@ export class OrdersList implements OnInit {
 
   showDetails(order: Order) {
     this.router.navigate(['/order-details', order.id]);
+  }
+  newOrder() {
+    this.router.navigate(['/new-order']);
   }
   getOrderButtonLabel(status: OrderStatus): string {
     switch (status) {
@@ -127,14 +171,6 @@ export class OrdersList implements OnInit {
     const diffInMinutes = (this.now() - createdTime) / (1000 * 60);
 
     return diffInMinutes > 20;
-  }
-  ngOnInit(): void {
-    this.getOrdersList();
-    this.getMenuList();
-    this.readQueryParams();
-    setInterval(() => {
-      this.now.set(Date.now());
-    }, 1000);
   }
 
   byStatus = computed(() => {

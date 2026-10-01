@@ -1,0 +1,219 @@
+<section class="min-h-screen bg-slate-50 p-4 sm:p-6">
+  <div class="mx-auto max-w-4xl">
+    <!-- Header -->
+    <div class="mb-6 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p class="text-sm font-medium text-sky-600">Create New Order</p>
+          <h1 class="mt-1 text-2xl font-bold text-slate-800">Add Order</h1>
+          <p class="mt-1 text-sm text-slate-500">Fill the order info to create a new one</p>
+        </div>
+
+        <span
+          class="w-fit rounded-full bg-sky-500 px-3 py-1 text-sm font-semibold capitalize text-white"
+        >
+          new
+        </span>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <form
+      [formGroup]="form"
+      (ngSubmit)="submit()"
+      class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200"
+    >
+      <div class="grid gap-4 sm:grid-cols-2">
+        <!-- Type -->
+        <div class="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200">
+          <label class="mb-2 block text-sm font-semibold text-slate-700">Order Type</label>
+          <select
+            formControlName="type"
+            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-sky-500"
+          >
+            @for (type of orderTypes(); track type) {
+              <option [value]="type">{{ type }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Created At Preview -->
+        <div class="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200">
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Status</p>
+          <p class="mt-2 text-base font-semibold text-slate-800">new</p>
+          <p class="mt-2 text-sm text-slate-500">
+            Created at {{ form.get('createdAt')?.value | date: 'medium' }}
+          </p>
+        </div>
+
+        <!-- Table -->
+        @if (showTable()) {
+          <div class="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200">
+            <label class="mb-2 block text-sm font-semibold text-slate-700">Table Number</label>
+            <input
+              type="number"
+              formControlName="table"
+              min="1"
+              max="40"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-sky-500"
+              placeholder="Enter table number"
+            />
+
+            @if (form.get('table')?.touched && form.get('table')?.invalid) {
+              <p class="mt-2 text-sm text-rose-500">Table number must be between 1 and 40</p>
+            }
+          </div>
+        }
+
+        <!-- Phone -->
+        @if (showPhone()) {
+          <div class="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200">
+            <label class="mb-2 block text-sm font-semibold text-slate-700">Phone Number</label>
+            <input
+              type="text"
+              formControlName="phone"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-sky-500"
+              placeholder="01xxxxxxxxx"
+            />
+
+            @if (form.get('phone')?.touched && form.get('phone')?.invalid) {
+              <p class="mt-2 text-sm text-rose-500">Please enter a valid Egyptian phone number</p>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Items Table -->
+      <div class="mt-6 rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200">
+        <div class="mb-4 flex items-center justify-between">
+          <h2 class="text-lg font-bold text-slate-800">Order Items</h2>
+
+          <button
+            type="button"
+            (click)="addItemRow()"
+            class="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-700"
+          >
+            + Add Row
+          </button>
+        </div>
+
+        <div formArrayName="items" class="overflow-x-auto">
+          <table class="min-w-full overflow-hidden rounded-xl bg-white">
+            <thead class="bg-slate-100">
+              <tr>
+                <th class="px-4 py-3 text-left text-sm font-semibold text-slate-700">Item</th>
+                <th class="px-4 py-3 text-left text-sm font-semibold text-slate-700">Quantity</th>
+                <th class="px-4 py-3 text-left text-sm font-semibold text-slate-700">Note</th>
+                <th class="px-4 py-3 text-left text-sm font-semibold text-slate-700">Price</th>
+                <th class="px-4 py-3 text-left text-sm font-semibold text-slate-700">Total</th>
+                <th class="px-4 py-3 text-left text-sm font-semibold text-slate-700">Action</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              @for (row of itemsArray.controls; track $index) {
+                <tr [formGroupName]="$index" class="border-t border-slate-200">
+                  <td class="px-4 py-3">
+                    <select
+                      formControlName="itemId"
+                      class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-sky-500"
+                    >
+                      <option value="">Select item</option>
+                      @for (item of menuItems(); track item.id) {
+                        <option [value]="item.id">
+                          {{ item.name }}
+                        </option>
+                      }
+                    </select>
+
+                    @if (row.get('itemId')?.touched && row.get('itemId')?.invalid) {
+                      <p class="mt-1 text-xs text-rose-500">Item is required</p>
+                    }
+                  </td>
+
+                  <td class="px-4 py-3">
+                    <input
+                      type="number"
+                      formControlName="quantity"
+                      min="1"
+                      class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-sky-500"
+                    />
+
+                    @if (row.get('quantity')?.touched && row.get('quantity')?.invalid) {
+                      <p class="mt-1 text-xs text-rose-500">Quantity must be at least 1</p>
+                    }
+                  </td>
+                  <td class="px-4 py-3">
+                    <input
+                      type="text"
+                      formControlName="note"
+                      placeholder="Add note"
+                      class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-sky-500"
+                    />
+                  </td>
+                  <td class="px-4 py-3">
+                    <input
+                      type="number"
+                      formControlName="price"
+                      readonly
+                      class="w-full rounded-xl border border-slate-200 bg-slate-100 px-3 py-2 text-sm outline-none"
+                    />
+                  </td>
+
+                  <td class="px-4 py-3">
+                    <input
+                      type="number"
+                      formControlName="total"
+                      readonly
+                      class="w-full rounded-xl border border-slate-200 bg-slate-100 px-3 py-2 text-sm outline-none"
+                    />
+                  </td>
+
+                  <td class="px-4 py-3">
+                    <button
+                      type="button"
+                      (click)="removeItemRow($index)"
+                      [disabled]="itemsArray.length === 1"
+                      class="rounded-xl bg-rose-500 px-3 py-2 text-sm font-semibold text-white transition hover:bg-rose-600 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        @if (itemsArray.invalid && itemsArray.touched) {
+          <p class="mt-2 text-sm text-rose-500">At least one item is required</p>
+        }
+
+        <div class="mt-4 flex justify-end">
+          <div class="rounded-xl bg-white px-4 py-3 shadow-sm ring-1 ring-slate-200">
+            <p class="text-sm text-slate-500">Order Total</p>
+            <p class="text-lg font-bold text-slate-800">{{ getOrderTotal() }}</p>
+          </div>
+        </div>
+      </div>
+      <!-- Actions -->
+      <div class="mt-6 flex items-center justify-end gap-3">
+        <button
+          routerLink="/"
+          type="button"
+          class="rounded-xl bg-slate-100 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          [disabled]="loading()"
+          class="rounded-xl bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {{ loading() ? 'Creating...' : 'Create Order' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</section>

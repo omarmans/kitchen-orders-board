@@ -15,11 +15,14 @@ export class OrdersService {
   getOrderById(id: string) {
     return this.http.get<Order>(`${this.baseUrl()}/orders/${id}`);
   }
-  getMenuItmes() {
-    return this.http.get<MenuItem[]>(`${this.baseUrl()}/menu`);
-  }
 
+  addNewOrder(newOrder: Order) {
+    return this.http.post<Order>(`${this.baseUrl()}/orders`, newOrder);
+  }
   updateOrderStatus(id: number | string, status: OrderStatus) {
     return this.http.patch<Order>(`${this.baseUrl()}/orders/${id}`, { status });
+  }
+  getMenuItmes() {
+    return this.http.get<MenuItem[]>(`${this.baseUrl()}/menu`);
   }
 }
