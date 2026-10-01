@@ -4,9 +4,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { OrdersService } from '../../../services/orders.service';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { MenuItem } from '../../../models/menu-item.model';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 @Component({
-  imports: [DatePipe, DecimalPipe],
+  imports: [DatePipe, DecimalPipe, TranslatePipe],
   selector: 'app-order-details',
   styleUrl: './order-details.scss',
   templateUrl: './order-details.html',
@@ -20,6 +21,7 @@ export class OrderDetails implements OnInit {
   private activatedRoute = inject(ActivatedRoute);
   private ordersService = inject(OrdersService);
   private router = inject(Router);
+  private translate = inject(TranslateService);
 
   menuItems = signal<MenuItem[]>([]);
 
@@ -29,7 +31,7 @@ export class OrderDetails implements OnInit {
     const id = this.activatedRoute.snapshot.paramMap.get('id');
 
     if (!id) {
-      // this.loading.set(false);
+      this.loading.set(false);
       this.notFound.set(true);
       return;
     }
@@ -71,6 +73,34 @@ export class OrderDetails implements OnInit {
         return 'bg-slate-200 text-slate-700';
       default:
         return 'bg-slate-100 text-slate-600';
+    }
+  }
+
+  getStatusLabel(status: string): string {
+    switch (status) {
+      case 'new':
+        return this.translate.instant('ORDERS.STATUS_NEW');
+      case 'preparing':
+        return this.translate.instant('ORDERS.STATUS_PREPARING');
+      case 'ready':
+        return this.translate.instant('ORDERS.STATUS_READY');
+      case 'served':
+        return this.translate.instant('ORDERS.STATUS_SERVED');
+      default:
+        return status;
+    }
+  }
+
+  getTypeLabel(type: string): string {
+    switch (type) {
+      case 'dine-in':
+        return this.translate.instant('ORDERS.TYPE_DINE_IN');
+      case 'takeaway':
+        return this.translate.instant('ORDERS.TYPE_TAKEAWAY');
+      case 'delivery':
+        return this.translate.instant('ORDERS.TYPE_DELIVERY');
+      default:
+        return type;
     }
   }
 

@@ -6,33 +6,37 @@ import { OrderType } from '../../../models/order.model';
 import { DatePipe } from '@angular/common';
 import { MenuItem } from '../../../models/menu-item.model';
 import { ToastrService } from 'ngx-toastr';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 @Component({
-  imports: [ReactiveFormsModule, DatePipe, RouterLink],
+  imports: [ReactiveFormsModule, DatePipe, RouterLink, TranslatePipe],
   selector: 'app-new-order',
   styleUrl: './new-order.scss',
   templateUrl: './new-order.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NewOrder implements OnInit {
+  private orderServices = inject(OrdersService);
+  private router = inject(Router);
+  private fb = inject(FormBuilder);
+  private toastr = inject(ToastrService);
+  private translate = inject(TranslateService);
+
+  form!: FormGroup;
+  createdAt = signal<string>(new Date().toISOString());
+  showTable = signal<boolean>(true);
+  showPhone = signal<boolean>(false);
+  loading = signal<boolean>(false);
+  newOrderId = signal<number | string>('');
+  orderTypes = signal<OrderType[]>(['dine-in', 'takeaway', 'delivery']);
+  menuItems = signal<MenuItem[]>([]);
+
   ngOnInit() {
     this.buildForm();
     this.setNextOrderNumber();
     this.getMenuList();
   }
-  createdAt = signal<string>(new Date().toISOString());
-  private orderServices = inject(OrdersService);
-  private router = inject(Router);
-  form!: FormGroup;
-  private fb = inject(FormBuilder);
-  showTable = signal<boolean>(true);
-  showPhone = signal<boolean>(false);
-  loading = signal<boolean>(false);
-  newOrderId = signal<number | string>('');
-  private toastr = inject(ToastrService);
-  orderTypes = signal<OrderType[]>(['dine-in', 'takeaway', 'delivery']);
-  // newOrderId = signal<number>(0);
-  menuItems = signal<MenuItem[]>([]);
+
   setNextOrderNumber() {
     this.orderServices.getOrders().subscribe({
       next: (orders) => {
@@ -53,37 +57,18 @@ export class NewOrder implements OnInit {
       },
     });
   }
-  // setNextOrderNumber() {
-  //   this.orderServices.getOrders().subscribe({
-  //     next: (orders) => {
-  //       if (orders && orders.length > 0) {
-  //         const maxNumber = Math.max(...orders.map((order) => order.number));
-  //         this.newOrderId.set(maxNumber + 1);
-  //       } else {
-  //         this.newOrderId.set(1);
-  //       }
-
-  //       this.buildForm();
-  //     },
-  //     error: (err) => {
-  //       console.error(err);
-  //       this.newOrderId.set(1);
-  //       this.buildForm();
-  //     },
-  //   });
-  // }
 
   getMenuList() {
     this.orderServices.getMenuItmes().subscribe({
       next: (res) => {
         this.menuItems.set(res);
-        console.log('menu:', res);
       },
       error: (err) => {
         console.error('menu error:', err);
       },
     });
   }
+
   buildForm() {
     this.form = this.fb.group({
       id: [this.newOrderId()],
@@ -107,10 +92,12 @@ export class NewOrder implements OnInit {
         ]);
       } else {
         phone?.clearValidators();
+        phone?.setValue('');
         phone?.updateValueAndValidity();
         this.showPhone.set(false);
       }
     });
+
     this.form.get('type')?.valueChanges.subscribe((value) => {
       const table = this.form.get('table');
       if (value === 'dine-in') {
@@ -118,11 +105,13 @@ export class NewOrder implements OnInit {
         table?.setValidators([Validators.required, Validators.min(1), Validators.max(40)]);
       } else {
         table?.clearValidators();
+        table?.setValue(null);
         table?.updateValueAndValidity();
         this.showTable.set(false);
       }
     });
   }
+
   createItemRow(): FormGroup {
     const row = this.fb.group({
       itemId: ['', Validators.required],
@@ -169,10 +158,27 @@ export class NewOrder implements OnInit {
       return sum + Number(row.get('total')?.value || 0);
     }, 0);
   }
+
+  getOrderTypeLabel(type: OrderType): string {
+    switch (type) {
+      case 'dine-in':
+        return this.translate.instant('ORDERS.TYPE_DINE_IN');
+      case 'takeaway':
+        return this.translate.instant('ORDERS.TYPE_TAKEAWAY');
+      case 'delivery':
+        return this.translate.instant('ORDERS.TYPE_DELIVERY');
+      default:
+        return type;
+    }
+  }
+
   submit() {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.toastr.error('Please fill all required fields correctly', 'Invalid Form');
+      this.toastr.error(
+        this.translate.instant('NEW_ORDER.INVALID_FORM_MESSAGE'),
+        this.translate.instant('NEW_ORDER.INVALID_FORM_TITLE'),
+      );
       return;
     }
 
@@ -200,13 +206,19 @@ export class NewOrder implements OnInit {
         console.log('order created:', res);
         this.loading.set(false);
         this.form.reset();
-        this.toastr.success('Order created successfully', 'Success');
+        this.toastr.success(
+          this.translate.instant('NEW_ORDER.SUCCESS_MESSAGE'),
+          this.translate.instant('NEW_ORDER.SUCCESS_TITLE'),
+        );
         this.router.navigate(['/order-list']);
       },
       error: (err) => {
         console.error('create order error:', err);
         this.loading.set(false);
-        this.toastr.error('Failed to create order', 'Error');
+        this.toastr.error(
+          this.translate.instant('NEW_ORDER.ERROR_MESSAGE'),
+          this.translate.instant('NEW_ORDER.ERROR_TITLE'),
+        );
       },
     });
   }
