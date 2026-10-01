@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { OrdersService } from '../../../services/orders.service';
 import { Router, RouterLink } from '@angular/router';
@@ -12,6 +12,7 @@ import { ToastrService } from 'ngx-toastr';
   selector: 'app-new-order',
   styleUrl: './new-order.scss',
   templateUrl: './new-order.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NewOrder implements OnInit {
   ngOnInit() {
@@ -205,7 +206,7 @@ export class NewOrder implements OnInit {
       error: (err) => {
         console.error('create order error:', err);
         this.loading.set(false);
-        this.toastr.success('Order created successfully', 'Success');
+        this.toastr.error('Failed to create order', 'Error');
       },
     });
   }

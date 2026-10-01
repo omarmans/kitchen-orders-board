@@ -1,4 +1,12 @@
-import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  OnDestroy,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { Order, OrderStatus, OrderType } from '../../../models/order.model';
 import { OrdersService } from '../../../services/orders.service';
@@ -14,6 +22,7 @@ import { exhaustMap, Subject, takeUntil, timer } from 'rxjs';
   selector: 'app-orders-list',
   styleUrl: './orders-list.scss',
   templateUrl: './orders-list.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OrdersList implements OnInit, OnDestroy {
   ngOnDestroy(): void {

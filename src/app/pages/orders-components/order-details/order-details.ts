@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { Order } from '../../../models/order.model';
 import { ActivatedRoute, Router } from '@angular/router';
 import { OrdersService } from '../../../services/orders.service';
@@ -10,6 +10,7 @@ import { MenuItem } from '../../../models/menu-item.model';
   selector: 'app-order-details',
   styleUrl: './order-details.scss',
   templateUrl: './order-details.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OrderDetails implements OnInit {
   order = signal<Order | null>(null);
