@@ -226,7 +226,7 @@ export class NewOrder implements OnInit {
 
     this.orderServices.addNewOrder(payload).subscribe({
       next: (res) => {
-        console.log('order created:', res);
+        // console.log('order created:', res);
         this.loading.set(false);
         this.form.reset();
         this.toastr.success(

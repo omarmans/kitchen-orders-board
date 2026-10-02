@@ -78,7 +78,7 @@ export class OrdersList implements OnInit, OnDestroy {
           this.ordersList.set(res);
         },
         error: (err) => {
-          console.error('orders error:', err);
+          // console.error('orders error:', err);
         },
       });
   }
@@ -260,7 +260,7 @@ export class OrdersList implements OnInit, OnDestroy {
         this.ordersList.set(res);
       },
       error: (err) => {
-        console.error('orders error:', err);
+        // console.error('orders error:', err);
       },
     });
   }
@@ -271,7 +271,7 @@ export class OrdersList implements OnInit, OnDestroy {
         this.menuItems.set(res);
       },
       error: (err) => {
-        console.error('menu error:', err);
+        // console.error('menu error:', err);
       },
     });
   }

@@ -50,7 +50,7 @@ export class OrderDetails implements OnInit {
         this.loading.set(false);
       },
       error: (err) => {
-        console.error('Error loading order details:', err);
+        // console.error('Error loading order details:', err);
         this.order.set(null);
         this.notFound.set(true);
         this.loading.set(false);
