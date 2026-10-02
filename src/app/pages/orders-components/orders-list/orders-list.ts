@@ -7,7 +7,7 @@ import {
   OnInit,
   signal,
 } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { Order, OrderStatus, OrderType } from '../../../models/order.model';
 import { OrdersService } from '../../../services/orders.service';
 import { MenuItem } from '../../../models/menu-item.model';
@@ -20,7 +20,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { calculateSubtotal, calculateTotals } from '../../../utils/order-pricing';
 
 @Component({
-  imports: [DatePipe, FormsModule, TranslatePipe],
+  imports: [DatePipe, FormsModule, TranslatePipe, DecimalPipe],
   selector: 'app-orders-list',
   styleUrl: './orders-list.scss',
   templateUrl: './orders-list.html',

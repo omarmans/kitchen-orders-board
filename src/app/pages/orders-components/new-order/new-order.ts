@@ -3,14 +3,14 @@ import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } fr
 import { OrdersService } from '../../../services/orders.service';
 import { Router, RouterLink } from '@angular/router';
 import { OrderType } from '../../../models/order.model';
-import { DatePipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { MenuItem } from '../../../models/menu-item.model';
 import { ToastrService } from 'ngx-toastr';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { calculateTotals } from '../../../utils/order-pricing';
 
 @Component({
-  imports: [ReactiveFormsModule, DatePipe, RouterLink, TranslatePipe],
+  imports: [ReactiveFormsModule, DatePipe, RouterLink, TranslatePipe, DecimalPipe],
   selector: 'app-new-order',
   styleUrl: './new-order.scss',
   templateUrl: './new-order.html',

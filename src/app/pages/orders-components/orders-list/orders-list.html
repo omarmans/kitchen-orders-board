@@ -86,7 +86,7 @@
                 {{
                   o.items.length === 1 ? ('COMMON.ITEM' | translate) : ('COMMON.ITEMS' | translate)
                 }}
-                · {{ 'COMMON.EGP' | translate }} {{ getOrderTotal(o) }}
+                · {{ 'COMMON.EGP' | translate }} {{ getOrderTotal(o) | number: '1.2-2' }}
               </p>
 
               <p class="mt-1 flex items-center justify-between text-xs text-slate-400">

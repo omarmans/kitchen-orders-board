@@ -224,7 +224,7 @@
         <div class="mt-4 flex justify-end">
           <div class="rounded-xl bg-white px-4 py-3 shadow-sm ring-1 ring-slate-200">
             <p class="text-sm text-slate-500">{{ 'NEW_ORDER.ORDER_TOTAL' | translate }}</p>
-            <p class="text-lg font-bold text-slate-800">{{ getOrderTotal() }}</p>
+            <p class="text-lg font-bold text-slate-800">{{ getOrderTotal() | number: '1.2-2' }}</p>
           </div>
         </div>
       </div>
