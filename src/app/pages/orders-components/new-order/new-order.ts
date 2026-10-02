@@ -101,6 +101,8 @@ export class NewOrder implements OnInit {
 
     this.form.get('type')?.valueChanges.subscribe((value) => {
       const phone = this.form.get('phone');
+      const table = this.form.get('table');
+
       if (value === 'delivery') {
         this.showPhone.set(true);
         phone?.setValidators([
@@ -111,22 +113,19 @@ export class NewOrder implements OnInit {
       } else {
         phone?.clearValidators();
         phone?.setValue('');
-        phone?.updateValueAndValidity();
         this.showPhone.set(false);
       }
-    });
+      phone?.updateValueAndValidity();
 
-    this.form.get('type')?.valueChanges.subscribe((value) => {
-      const table = this.form.get('table');
       if (value === 'dine-in') {
         this.showTable.set(true);
         table?.setValidators([Validators.required, Validators.min(1), Validators.max(40)]);
       } else {
         table?.clearValidators();
         table?.setValue(null);
-        table?.updateValueAndValidity();
         this.showTable.set(false);
       }
+      table?.updateValueAndValidity();
     });
   }
 
