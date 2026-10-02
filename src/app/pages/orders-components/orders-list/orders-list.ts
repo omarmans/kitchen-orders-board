@@ -51,7 +51,7 @@ export class OrdersList implements OnInit, OnDestroy {
 
     this.nowIntervalId = setInterval(() => {
       this.now.set(Date.now());
-    }, 1000);
+    }, 60000);
   }
 
   ngOnDestroy(): void {
