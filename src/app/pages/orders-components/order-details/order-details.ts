@@ -5,6 +5,7 @@ import { OrdersService } from '../../../services/orders.service';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { MenuItem } from '../../../models/menu-item.model';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { calculateSubtotal, calculateTotals } from '../../../utils/order-pricing';
 
 @Component({
   imports: [DatePipe, DecimalPipe, TranslatePipe],
@@ -119,24 +120,29 @@ export class OrderDetails implements OnInit {
     return this.menuItems().find((item) => item.id === menuId);
   }
 
+  // getOrderTotal(order: Order): number {
+  //   let total = 0;
+
+  //   order.items.forEach((item) => {
+  //     const menuItem = this.getMenuItemById(item.menuId);
+  //     const price = menuItem?.price ?? 0;
+  //     total += price * item.qty;
+  //   });
+
+  //   if (order.type === 'dine-in') {
+  //     const service = total * 0.12;
+  //     const servicePlusTotal = total + service;
+  //     const vat = servicePlusTotal * 0.14;
+
+  //     return total + service + vat;
+  //   }
+
+  //   const vat = total * 0.14;
+  //   return total + vat;
+  // }
+
   getOrderTotal(order: Order): number {
-    let total = 0;
-
-    order.items.forEach((item) => {
-      const menuItem = this.getMenuItemById(item.menuId);
-      const price = menuItem?.price ?? 0;
-      total += price * item.qty;
-    });
-
-    if (order.type === 'dine-in') {
-      const service = total * 0.12;
-      const servicePlusTotal = total + service;
-      const vat = servicePlusTotal * 0.14;
-
-      return total + service + vat;
-    }
-
-    const vat = total * 0.14;
-    return total + vat;
+    const subtotal = calculateSubtotal(order.items, this.menuItems());
+    return calculateTotals(subtotal, order.type).total;
   }
 }

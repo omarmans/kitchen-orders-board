@@ -17,6 +17,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { exhaustMap, Subject, takeUntil, timer } from 'rxjs';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { calculateSubtotal, calculateTotals } from '../../../utils/order-pricing';
 
 @Component({
   imports: [DatePipe, FormsModule, TranslatePipe],
@@ -321,12 +322,16 @@ export class OrdersList implements OnInit, OnDestroy {
   }
 
   getOrderTotal(order: Order): number {
-    return order.items.reduce((total, item) => {
-      const menuItem = this.menuItems().find((menu) => menu.id === item.menuId);
-      const price = menuItem?.price ?? 0;
-      return total + price * item.qty;
-    }, 0);
+    const subtotal = calculateSubtotal(order.items, this.menuItems());
+    return calculateTotals(subtotal, order.type).total;
   }
+  // getOrderTotal(order: Order): number {
+  //   return order.items.reduce((total, item) => {
+  //     const menuItem = this.menuItems().find((menu) => menu.id === item.menuId);
+  //     const price = menuItem?.price ?? 0;
+  //     return total + price * item.qty;
+  //   }, 0);
+  // }
 
   // getOrderTotal(order: Order): number {
   //   let total = 0;

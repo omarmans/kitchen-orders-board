@@ -7,6 +7,7 @@ import { DatePipe } from '@angular/common';
 import { MenuItem } from '../../../models/menu-item.model';
 import { ToastrService } from 'ngx-toastr';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { calculateTotals } from '../../../utils/order-pricing';
 
 @Component({
   imports: [ReactiveFormsModule, DatePipe, RouterLink, TranslatePipe],
@@ -153,12 +154,18 @@ export class NewOrder implements OnInit {
     }
   }
 
+  // getOrderTotal(): number {
+  //   return this.itemsArray.controls.reduce((sum, row) => {
+  //     return sum + Number(row.get('total')?.value || 0);
+  //   }, 0);
+  // }
   getOrderTotal(): number {
-    return this.itemsArray.controls.reduce((sum, row) => {
-      return sum + Number(row.get('total')?.value || 0);
-    }, 0);
+    const subtotal = this.itemsArray.controls.reduce(
+      (sum, row) => sum + Number(row.get('total')?.value || 0),
+      0,
+    );
+    return calculateTotals(subtotal, this.form.get('type')?.value).total;
   }
-
   getOrderTypeLabel(type: OrderType): string {
     switch (type) {
       case 'dine-in':
