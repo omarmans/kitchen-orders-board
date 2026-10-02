@@ -38,27 +38,44 @@ export class NewOrder implements OnInit {
     this.getMenuList();
   }
 
+  // setNextOrderNumber() {
+  //   this.orderServices.getOrders().subscribe({
+  //     next: (orders) => {
+  //       if (orders && orders.length > 0) {
+  //         orders.sort((a, b) => b.number - a.number);
+  //         const nextNumber = orders[0].number + 1;
+  //         this.newOrderId.set(nextNumber);
+  //       } else {
+  //         this.newOrderId.set(1);
+  //       }
+
+  //       this.buildForm();
+  //     },
+  //     error: (err) => {
+  //       console.error(err);
+  //       this.newOrderId.set(1);
+  //       this.buildForm();
+  //     },
+  //   });
+  // }
+
   setNextOrderNumber() {
     this.orderServices.getOrders().subscribe({
       next: (orders) => {
-        if (orders && orders.length > 0) {
-          orders.sort((a, b) => b.number - a.number);
-          const nextNumber = orders[0].number + 1;
-          this.newOrderId.set(nextNumber);
-        } else {
-          this.newOrderId.set(1);
-        }
-
-        this.buildForm();
+        const nextNumber = orders?.length ? Math.max(...orders.map((o) => o.number)) + 1 : 1;
+        this.applyOrderNumber(nextNumber);
       },
       error: (err) => {
         console.error(err);
-        this.newOrderId.set(1);
-        this.buildForm();
+        this.applyOrderNumber(1);
       },
     });
   }
 
+  private applyOrderNumber(orderNumber: number) {
+    this.newOrderId.set(orderNumber);
+    this.form.patchValue({ id: orderNumber, number: orderNumber });
+  }
   getMenuList() {
     this.orderServices.getMenuItmes().subscribe({
       next: (res) => {
